@@ -11,7 +11,7 @@
 
 # # The bin structure
 # bin = {
-#     "name": "item 2",  # string
+#     "name": "bin 1",  # string
 #     "width": 50.5,  # float
 #     "height": 30.5,  # float
 #     "depth": 20.5,  # float
@@ -44,7 +44,8 @@ START_POSITION = [0, 0, 0]
 
 class Item:
     def __init__(
-        self, name, width, height, depth, weight, rotation_type, position
+        self, name, width, height, depth, weight, rotation_type=0,
+        position=START_POSITION
     ):
         self.name = name
         self.width = width
@@ -132,11 +133,13 @@ class Packer:
         self.bins = bins
         self.items = items
         self.unfit_items = unfit_items
+        self.total_items = 0
 
     def add_bin(self, bin):
         return self.bins.append(bin)
 
     def add_item(self, item):
+        self.total_items = len(self.items) + 1
         return self.items.append(item)
 
     def unfit_item(self):
@@ -216,9 +219,9 @@ class Packer:
 
         return unpacked
 
-    def pack(self):
-        self.bins.sort(key=lambda x: x.get_volume(), reverse=True)
-        self.items.sort(key=lambda x: x.get_volume(), reverse=True)
+    def pack(self, bigger_first=False):
+        self.bins.sort(key=lambda x: x.get_volume(), reverse=bigger_first)
+        self.items.sort(key=lambda x: x.get_volume(), reverse=bigger_first)
 
         while len(self.items) > 0:
             bin = self.find_fitted_bin(self.items[0])
@@ -229,6 +232,13 @@ class Packer:
             self.items = self.pack_to_bin(bin, self.items)
 
         return None
+
+    def fitted_all(self):
+        result = []
+        for b in self.bins:
+            result.append(True if len(b.items) == self.total_items else False)
+
+        return result
 
 
 def rect_intersect(item1, item2, x, y):
