@@ -21,8 +21,8 @@ packer = Packer()
 packer.add_bin(Bin("Small Bin", 15, 15, 15, 10))
 
 # Add the items
-packer.add_item(Item("Item 1", 8, 15, 10, 20, 0, [0, 0, 0]))
-packer.add_item(Item("Item 2", 9, 10, 15, 20, 0, [0, 0, 0]))
+packer.add_item(Item("Item 1", 8, 15, 10, 20))
+packer.add_item(Item("Item 2", 9, 10, 15, 20))
 
 # Pack the items into de bins
 packer.pack()
