@@ -84,13 +84,13 @@ class Item:
 
 
 class Bin:
-    def __init__(self, name, width, height, depth, max_weight, items=[]):
+    def __init__(self, name, width, height, depth, max_weight):
         self.name = name
         self.width = width
         self.height = height
         self.depth = depth
         self.max_weight = max_weight
-        self.items = items
+        self.items = []
 
     def string(self):
         return "%s(%sx%sx%s, max_weight:%s)" % (
@@ -99,6 +99,13 @@ class Bin:
 
     def get_volume(self):
         return self.width * self.height * self.depth
+
+    def get_total_weight(self):
+        total_weight = 0
+        for item in self.items:
+            total_weight += item.weight
+
+        return total_weight
 
     def put_item(self, item, pivot):
         fit = False
@@ -121,6 +128,9 @@ class Bin:
                     break
 
             if fit:
+                if self.get_total_weight() + item.weight > self.max_weight:
+                    fit = False
+                    return fit
                 self.items.append(item)
 
             return fit
@@ -129,10 +139,10 @@ class Bin:
 
 
 class Packer:
-    def __init__(self, bins=[], items=[], unfit_items=[]):
-        self.bins = bins
-        self.items = items
-        self.unfit_items = unfit_items
+    def __init__(self):
+        self.bins = []
+        self.items = []
+        self.unfit_items = []
         self.total_items = 0
 
     def add_bin(self, bin):
@@ -177,7 +187,7 @@ class Packer:
             return self.items
 
         for i in items[1:]:
-            for pt in range(0, 3):
+            for pt in range(0, len(Axis.ALL)):
                 for ib in bin.items:
                     if pt == Axis.WIDTH:
                         pv = [
