@@ -1,25 +1,3 @@
-# # The item structure
-# item = {
-#     "name": "item 1",  # string
-#     "width": 20.5,  # float
-#     "height": 20.5,  # float
-#     "depth": 20.5,  # float
-#     "weight": 20.5,  # float
-#     "rotationType": 1,  # integer
-#     "position": []  # array floats
-# }
-
-# # The bin structure
-# bin = {
-#     "name": "bin 1",  # string
-#     "width": 50.5,  # float
-#     "height": 30.5,  # float
-#     "depth": 20.5,  # float
-#     "max_weight": 40.5,  # float
-#     "items": []  # array objects
-# }
-
-
 class RotationType:
     RT_WHD = 0
     RT_HWD = 1
@@ -109,6 +87,7 @@ class Bin:
 
     def put_item(self, item, pivot):
         fit = False
+        valid_item_position = item.position
         item.position = pivot
         for i in range(0, len(RotationType.ALL)):
             item.rotation_type = i
@@ -133,7 +112,12 @@ class Bin:
                     return fit
                 self.items.append(item)
 
+            if not fit:
+                item.position = valid_item_position
             return fit
+
+        if not fit:
+            item.position = valid_item_position
 
         return fit
 
@@ -189,6 +173,7 @@ class Packer:
         for i in items[1:]:
             for pt in range(0, len(Axis.ALL)):
                 for ib in bin.items:
+                    pv = [0, 0, 0]
                     if pt == Axis.WIDTH:
                         pv = [
                             ib.position[0] + ib.width,
@@ -207,8 +192,6 @@ class Packer:
                             ib.position[1],
                             ib.position[2] + ib.depth
                         ]
-                    else:
-                        pv = [0, 0, 0]
 
                     if bin.put_item(i, pv):
                         fitted = True
