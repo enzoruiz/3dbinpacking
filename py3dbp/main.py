@@ -171,6 +171,7 @@ class Packer:
             return self.items
 
         for i in items[1:]:
+            fitted = False
             for pt in range(0, len(Axis.ALL)):
                 for ib in bin.items:
                     pv = [0, 0, 0]
