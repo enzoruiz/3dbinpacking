@@ -17,6 +17,6 @@ for b in packer.bins:
 if packer.unfit_items:
     print('Unfit items')
     for b in packer.unfit_items:
-        print("====> ", b.string()
+        print("====> ", b.string())
 
 
