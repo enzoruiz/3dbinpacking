@@ -34,13 +34,13 @@ class Item:
         self.position = position
 
     def string(self):
-        return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s)" % (
+        return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
             self.name, self.width, self.height, self.depth, self.weight,
-            self.position, self.rotation_type
+            self.position, self.rotation_type, self.get_volume()
         )
 
     def get_volume(self):
-        return self.width * self.height * self.depth
+        return round(self.width * self.height * self.depth, 2)
 
     def get_dimension(self):
         if self.rotation_type == RotationType.RT_WHD:
@@ -69,14 +69,16 @@ class Bin:
         self.depth = depth
         self.max_weight = max_weight
         self.items = []
+        self.unfitted_items = []
 
     def string(self):
-        return "%s(%sx%sx%s, max_weight:%s)" % (
-            self.name, self.width, self.height, self.depth, self.max_weight
+        return "%s(%sx%sx%s, max_weight:%s) vol(%s)" % (
+            self.name, self.width, self.height, self.depth, self.max_weight,
+            self.get_volume()
         )
 
     def get_volume(self):
-        return self.width * self.height * self.depth
+        return round(self.width * self.height * self.depth, 2)
 
     def get_total_weight(self):
         total_weight = 0
@@ -136,102 +138,57 @@ class Packer:
         self.total_items = len(self.items) + 1
         return self.items.append(item)
 
-    def unfit_item(self):
-        if len(self.items) == 0:
-            return
-        self.unfit_items.append(self.items[0])
-        self.items = self.items[1:]
+    def pack_to_bin(self, bin, item):
+        fitted = False
 
-    def find_fitted_bin(self, item):
-        for b in self.bins:
-            if not b.put_item(item, START_POSITION):
-                continue
-            if len(b.items) == 1 and b.items[0] == item:
-                b.items = []
+        if not bin.items:
+            response = bin.put_item(item, START_POSITION)
 
-            return b
+            if not response:
+                bin.unfitted_items.append(item)
 
-        return None
+            return None
 
-    def get_bigger_bin_than(self, bin):
-        v = bin.get_volume()
-        for bin2 in self.bins:
-            if bin2.get_volume() > v:
-                return bin2
+        for pt in range(0, len(Axis.ALL)):
+            for ib in bin.items:
+                pv = [0, 0, 0]
+                if pt == Axis.WIDTH:
+                    pv = [
+                        ib.position[0] + ib.width,
+                        ib.position[1],
+                        ib.position[2]
+                    ]
+                elif pt == Axis.HEIGHT:
+                    pv = [
+                        ib.position[0],
+                        ib.position[1] + ib.height,
+                        ib.position[2]
+                    ]
+                elif pt == Axis.DEPTH:
+                    pv = [
+                        ib.position[0],
+                        ib.position[1],
+                        ib.position[2] + ib.depth
+                    ]
 
-        return None
+                if bin.put_item(item, pv):
+                    fitted = True
+                    break
 
-    def pack_to_bin(self, bin, items):
-        unpacked = []
-        fitted = bin.put_item(items[0], START_POSITION)
         if not fitted:
-            bin2 = self.get_bigger_bin_than(bin)
-            if bin2 is not None:
-                return self.pack_to_bin(bin2, items)
-            return self.items
+            bin.unfitted_items.append(item)
 
-        for i in items[1:]:
-            for pt in range(0, len(Axis.ALL)):
-                for ib in bin.items:
-                    pv = [0, 0, 0]
-                    if pt == Axis.WIDTH:
-                        pv = [
-                            ib.position[0] + ib.width,
-                            ib.position[1],
-                            ib.position[2]
-                        ]
-                    elif pt == Axis.HEIGHT:
-                        pv = [
-                            ib.position[0],
-                            ib.position[1] + ib.height,
-                            ib.position[2]
-                        ]
-                    elif pt == Axis.DEPTH:
-                        pv = [
-                            ib.position[0],
-                            ib.position[1],
-                            ib.position[2] + ib.depth
-                        ]
-
-                    if bin.put_item(i, pv):
-                        fitted = True
-                        break
-
-            if not fitted:
-                bin2 = self.get_bigger_bin_than(bin)
-                while bin2 is not None:
-                    left = self.pack_to_bin(bin2, bin2.items.append(i))
-                    if len(left) == 0:
-                        bin = bin2
-                        fitted = True
-                        break
-                    bin2 = self.get_bigger_bin_than(bin)
-
-                if not fitted:
-                    unpacked.append(i)
-
-        return unpacked
-
-    def pack(self, bigger_first=False):
+    def pack(self, bigger_first=False, distribute_items=False):
         self.bins.sort(key=lambda x: x.get_volume(), reverse=bigger_first)
         self.items.sort(key=lambda x: x.get_volume(), reverse=bigger_first)
 
-        while len(self.items) > 0:
-            bin = self.find_fitted_bin(self.items[0])
-            if bin is None:
-                self.unfit_item()
-                continue
+        for bin in self.bins:
+            for item in self.items:
+                self.pack_to_bin(bin, item)
 
-            self.items = self.pack_to_bin(bin, self.items)
-
-        return None
-
-    def fitted_all(self):
-        result = []
-        for b in self.bins:
-            result.append(True if len(b.items) == self.total_items else False)
-
-        return result
+            if distribute_items:
+                for item in bin.items:
+                    self.items.remove(item)
 
 
 def rect_intersect(item1, item2, x, y):
