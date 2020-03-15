@@ -1,42 +1,24 @@
-class RotationType:
-    RT_WHD = 0
-    RT_HWD = 1
-    RT_HDW = 2
-    RT_DHW = 3
-    RT_DWH = 4
-    RT_WDH = 5
-
-    ALL = [RT_WHD, RT_HWD, RT_HDW, RT_DHW, RT_DWH, RT_WDH]
-
-
-class Axis:
-    WIDTH = 0
-    HEIGHT = 1
-    DEPTH = 2
-
-    ALL = [WIDTH, HEIGHT, DEPTH]
-
+from .constants import RotationType, Axis
+from .auxiliary_methods import intersect
 
 START_POSITION = [0, 0, 0]
 
 
 class Item:
-    def __init__(
-        self, name, width, height, depth, weight, rotation_type=0,
-        position=START_POSITION
-    ):
+    def __init__(self, name, width, height, depth, weight):
         self.name = name
         self.width = width
         self.height = height
         self.depth = depth
         self.weight = weight
-        self.rotation_type = rotation_type
-        self.position = position
+        self.rotation_type = 0
+        self.position = START_POSITION
+        self.volume = self.get_volume()
 
     def string(self):
         return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
             self.name, self.width, self.height, self.depth, self.weight,
-            self.position, self.rotation_type, self.get_volume()
+            self.position, self.rotation_type, self.volume
         )
 
     def get_volume(self):
@@ -44,21 +26,21 @@ class Item:
 
     def get_dimension(self):
         if self.rotation_type == RotationType.RT_WHD:
-            d = [self.width, self.height, self.depth]
+            dimension = [self.width, self.height, self.depth]
         elif self.rotation_type == RotationType.RT_HWD:
-            d = [self.height, self.width, self.depth]
+            dimension = [self.height, self.width, self.depth]
         elif self.rotation_type == RotationType.RT_HDW:
-            d = [self.height, self.depth, self.width]
+            dimension = [self.height, self.depth, self.width]
         elif self.rotation_type == RotationType.RT_DHW:
-            d = [self.depth, self.height, self.width]
+            dimension = [self.depth, self.height, self.width]
         elif self.rotation_type == RotationType.RT_DWH:
-            d = [self.depth, self.width, self.height]
+            dimension = [self.depth, self.width, self.height]
         elif self.rotation_type == RotationType.RT_WDH:
-            d = [self.width, self.depth, self.height]
+            dimension = [self.width, self.depth, self.height]
         else:
-            d = []
+            dimension = []
 
-        return d
+        return dimension
 
 
 class Bin:
@@ -70,11 +52,12 @@ class Bin:
         self.max_weight = max_weight
         self.items = []
         self.unfitted_items = []
+        self.volume = self.get_volume()
 
     def string(self):
         return "%s(%sx%sx%s, max_weight:%s) vol(%s)" % (
             self.name, self.width, self.height, self.depth, self.max_weight,
-            self.get_volume()
+            self.volume
         )
 
     def get_volume(self):
@@ -82,6 +65,7 @@ class Bin:
 
     def get_total_weight(self):
         total_weight = 0
+
         for item in self.items:
             total_weight += item.weight
 
@@ -91,20 +75,21 @@ class Bin:
         fit = False
         valid_item_position = item.position
         item.position = pivot
+
         for i in range(0, len(RotationType.ALL)):
             item.rotation_type = i
-            d = item.get_dimension()
+            dimension = item.get_dimension()
             if (
-                self.width < pivot[0]+d[0] or
-                self.height < pivot[1]+d[1] or
-                self.depth < pivot[2]+d[2]
+                self.width < pivot[0] + dimension[0] or
+                self.height < pivot[1] + dimension[1] or
+                self.depth < pivot[2] + dimension[2]
             ):
                 continue
 
             fit = True
 
-            for ib in self.items:
-                if intersect(ib, item):
+            for current_item_in_bin in self.items:
+                if intersect(current_item_in_bin, item):
                     fit = False
                     break
 
@@ -112,10 +97,12 @@ class Bin:
                 if self.get_total_weight() + item.weight > self.max_weight:
                     fit = False
                     return fit
+
                 self.items.append(item)
 
             if not fit:
                 item.position = valid_item_position
+
             return fit
 
         if not fit:
@@ -136,6 +123,7 @@ class Packer:
 
     def add_item(self, item):
         self.total_items = len(self.items) + 1
+
         return self.items.append(item)
 
     def pack_to_bin(self, bin, item):
@@ -147,31 +135,31 @@ class Packer:
             if not response:
                 bin.unfitted_items.append(item)
 
-            return None
+            return
 
-        for pt in range(0, len(Axis.ALL)):
+        for axis in range(0, len(Axis.ALL)):
             for ib in bin.items:
-                pv = [0, 0, 0]
-                if pt == Axis.WIDTH:
-                    pv = [
+                pivot = [0, 0, 0]
+                if axis == Axis.WIDTH:
+                    pivot = [
                         ib.position[0] + ib.width,
                         ib.position[1],
                         ib.position[2]
                     ]
-                elif pt == Axis.HEIGHT:
-                    pv = [
+                elif axis == Axis.HEIGHT:
+                    pivot = [
                         ib.position[0],
                         ib.position[1] + ib.height,
                         ib.position[2]
                     ]
-                elif pt == Axis.DEPTH:
-                    pv = [
+                elif axis == Axis.DEPTH:
+                    pivot = [
                         ib.position[0],
                         ib.position[1],
                         ib.position[2] + ib.depth
                     ]
 
-                if bin.put_item(item, pv):
+                if bin.put_item(item, pivot):
                     fitted = True
                     break
 
@@ -179,8 +167,8 @@ class Packer:
             bin.unfitted_items.append(item)
 
     def pack(self, bigger_first=False, distribute_items=False):
-        self.bins.sort(key=lambda x: x.get_volume(), reverse=bigger_first)
-        self.items.sort(key=lambda x: x.get_volume(), reverse=bigger_first)
+        self.bins.sort(key=lambda bin: bin.volume, reverse=bigger_first)
+        self.items.sort(key=lambda item: item.volume, reverse=bigger_first)
 
         for bin in self.bins:
             for item in self.items:
@@ -189,26 +177,3 @@ class Packer:
             if distribute_items:
                 for item in bin.items:
                     self.items.remove(item)
-
-
-def rect_intersect(item1, item2, x, y):
-    d1 = item1.get_dimension()
-    d2 = item2.get_dimension()
-
-    cx1 = item1.position[x] + d1[x]/2
-    cy1 = item1.position[y] + d1[y]/2
-    cx2 = item2.position[x] + d2[x]/2
-    cy2 = item2.position[y] + d2[y]/2
-
-    ix = max(cx1, cx2) - min(cx1, cx2)
-    iy = max(cy1, cy2) - min(cy1, cy2)
-
-    return ix < (d1[x]+d2[x])/2 and iy < (d1[y]+d2[y])/2
-
-
-def intersect(item1, item2):
-    return (
-        rect_intersect(item1, item2, Axis.WIDTH, Axis.HEIGHT) and
-        rect_intersect(item1, item2, Axis.HEIGHT, Axis.DEPTH) and
-        rect_intersect(item1, item2, Axis.WIDTH, Axis.DEPTH)
-    )
