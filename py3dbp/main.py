@@ -162,6 +162,8 @@ class Packer:
                 if bin.put_item(item, pivot):
                     fitted = True
                     break
+            if fitted:
+                break
 
         if not fitted:
             bin.unfitted_items.append(item)
