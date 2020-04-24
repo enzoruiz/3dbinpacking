@@ -1,3 +1,4 @@
+from decimal import Decimal
 from .constants import Axis
 
 
@@ -22,3 +23,13 @@ def intersect(item1, item2):
         rect_intersect(item1, item2, Axis.HEIGHT, Axis.DEPTH) and
         rect_intersect(item1, item2, Axis.WIDTH, Axis.DEPTH)
     )
+
+
+def get_limit_number_of_decimals(number_of_decimals):
+    return Decimal('1.{}'.format('0' * number_of_decimals))
+
+
+def set_to_decimal(value, number_of_decimals):
+    number_of_decimals = get_limit_number_of_decimals(number_of_decimals)
+
+    return Decimal(value).quantize(number_of_decimals)

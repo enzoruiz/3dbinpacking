@@ -1,6 +1,7 @@
 from .constants import RotationType, Axis
-from .auxiliary_methods import intersect
+from .auxiliary_methods import intersect, set_to_decimal
 
+DEFAULT_NUMBER_OF_DECIMALS = 3
 START_POSITION = [0, 0, 0]
 
 
@@ -13,16 +14,25 @@ class Item:
         self.weight = weight
         self.rotation_type = 0
         self.position = START_POSITION
-        self.volume = self.get_volume()
+        self.number_of_decimals = DEFAULT_NUMBER_OF_DECIMALS
+
+    def format_numbers(self, number_of_decimals):
+        self.width = set_to_decimal(self.width, number_of_decimals)
+        self.height = set_to_decimal(self.height, number_of_decimals)
+        self.depth = set_to_decimal(self.depth, number_of_decimals)
+        self.weight = set_to_decimal(self.weight, number_of_decimals)
+        self.number_of_decimals = number_of_decimals
 
     def string(self):
         return "%s(%sx%sx%s, weight: %s) pos(%s) rt(%s) vol(%s)" % (
             self.name, self.width, self.height, self.depth, self.weight,
-            self.position, self.rotation_type, self.volume
+            self.position, self.rotation_type, self.get_volume()
         )
 
     def get_volume(self):
-        return round(self.width * self.height * self.depth, 2)
+        return set_to_decimal(
+            self.width * self.height * self.depth, self.number_of_decimals
+        )
 
     def get_dimension(self):
         if self.rotation_type == RotationType.RT_WHD:
@@ -52,16 +62,25 @@ class Bin:
         self.max_weight = max_weight
         self.items = []
         self.unfitted_items = []
-        self.volume = self.get_volume()
+        self.number_of_decimals = DEFAULT_NUMBER_OF_DECIMALS
+
+    def format_numbers(self, number_of_decimals):
+        self.width = set_to_decimal(self.width, number_of_decimals)
+        self.height = set_to_decimal(self.height, number_of_decimals)
+        self.depth = set_to_decimal(self.depth, number_of_decimals)
+        self.max_weight = set_to_decimal(self.max_weight, number_of_decimals)
+        self.number_of_decimals = number_of_decimals
 
     def string(self):
         return "%s(%sx%sx%s, max_weight:%s) vol(%s)" % (
             self.name, self.width, self.height, self.depth, self.max_weight,
-            self.volume
+            self.get_volume()
         )
 
     def get_volume(self):
-        return round(self.width * self.height * self.depth, 2)
+        return set_to_decimal(
+            self.width * self.height * self.depth, self.number_of_decimals
+        )
 
     def get_total_weight(self):
         total_weight = 0
@@ -69,7 +88,7 @@ class Bin:
         for item in self.items:
             total_weight += item.weight
 
-        return total_weight
+        return set_to_decimal(total_weight, self.number_of_decimals)
 
     def put_item(self, item, pivot):
         fit = False
@@ -137,8 +156,10 @@ class Packer:
 
             return
 
-        for axis in range(0, len(Axis.ALL)):
-            for ib in bin.items:
+        for axis in range(0, 3):
+            items_in_bin = bin.items
+
+            for ib in items_in_bin:
                 pivot = [0, 0, 0]
                 if axis == Axis.WIDTH:
                     pivot = [
@@ -166,9 +187,22 @@ class Packer:
         if not fitted:
             bin.unfitted_items.append(item)
 
-    def pack(self, bigger_first=False, distribute_items=False):
-        self.bins.sort(key=lambda bin: bin.volume, reverse=bigger_first)
-        self.items.sort(key=lambda item: item.volume, reverse=bigger_first)
+    def pack(
+        self, bigger_first=False, distribute_items=False,
+        number_of_decimals=DEFAULT_NUMBER_OF_DECIMALS
+    ):
+        for bin in self.bins:
+            bin.format_numbers(number_of_decimals)
+
+        for item in self.items:
+            item.format_numbers(number_of_decimals)
+
+        self.bins.sort(
+            key=lambda bin: bin.get_volume(), reverse=bigger_first
+        )
+        self.items.sort(
+            key=lambda item: item.get_volume(), reverse=bigger_first
+        )
 
         for bin in self.bins:
             for item in self.items:
