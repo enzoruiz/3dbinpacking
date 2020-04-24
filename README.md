@@ -1,7 +1,7 @@
 3D Bin Packing
 ====
 
-3D Bin Packing implementation based on [this paper](http://www.cs.ukzn.ac.za/publications/erick_dube_507-034.pdf). The code is based on [gedex](https://github.com/gedex/bp3d) implementation in Go.
+3D Bin Packing implementation based on [this paper](erick_dube_507-034.pdf). The code is based on [gedex](https://github.com/gedex/bp3d) implementation in Go.
 
 ## Features
 1. Sorting Bins and Items:
@@ -90,7 +90,7 @@ for b in packer.bins:
 - **1.x**
     - Two ways to distribute items (all items in all bins - all items in each bin).
     - Get per bin the fitted and unfitted items.
-    - Set the limit of decimals.
+    - Set the limit of decimals of inputs and outputs.
 - **0.x**
     - Try to put all items in the first bin that can fit at least one.
 
