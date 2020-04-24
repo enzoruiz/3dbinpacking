@@ -9,6 +9,8 @@
 2. Item Distribution:
     - ```[distribute_items=True]``` From a list of bins and items, put the items in the bins that at least one item be in one bin that can be fitted. That is, distribute all the items in all the bins so that they can be contained.
     - ```[distribute_items=False]``` From a list of bins and items, try to put all the items in each bin and in the end it show per bin all the items that was fitted and the items that was not.
+3. Number of decimals:
+    ```[number_of_decimals=X]``` Define the limits of decimals of the inputs and the outputs. By default is 3.
 
 ## Install
 
@@ -30,7 +32,7 @@ packer = Packer()           # PACKER DEFINITION
 packer.add_bin(my_bin)      # ADDING BINS TO PACKER
 packer.add_item(my_item)    # ADDING ITEMS TO PACKER
 
-packer.pack()               # PACKING - by default (bigger_first=False, distribute_items=False)
+packer.pack()               # PACKING - by default (bigger_first=False, distribute_items=False, number_of_decimals=3)
 ```
 
 After packing:
@@ -88,6 +90,7 @@ for b in packer.bins:
 - **1.x**
     - Two ways to distribute items (all items in all bins - all items in each bin).
     - Get per bin the fitted and unfitted items.
+    - Set the limit of decimals.
 - **0.x**
     - Try to put all items in the first bin that can fit at least one.
 
