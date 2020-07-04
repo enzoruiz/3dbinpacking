@@ -161,23 +161,24 @@ class Packer:
 
             for ib in items_in_bin:
                 pivot = [0, 0, 0]
+                w, h, d = ib.get_dimension()
                 if axis == Axis.WIDTH:
                     pivot = [
-                        ib.position[0] + ib.width,
+                        ib.position[0] + w,
                         ib.position[1],
                         ib.position[2]
                     ]
                 elif axis == Axis.HEIGHT:
                     pivot = [
                         ib.position[0],
-                        ib.position[1] + ib.height,
+                        ib.position[1] + h,
                         ib.position[2]
                     ]
                 elif axis == Axis.DEPTH:
                     pivot = [
                         ib.position[0],
                         ib.position[1],
-                        ib.position[2] + ib.depth
+                        ib.position[2] + d
                     ]
 
                 if bin.put_item(item, pivot):
