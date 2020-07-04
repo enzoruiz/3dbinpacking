@@ -86,6 +86,9 @@ for b in packer.bins:
 
 ```
 
+## Latest Stable Version
+    py3dbp==1.1.2
+
 ## Versioning
 - **1.x**
     - Two ways to distribute items (all items in all bins - all items in each bin).
