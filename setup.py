@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='py3dbp',
-    version='1.1',
+    version='1.1.2',
     author="Enzo Ruiz Pelaez",
     author_email="enzo.rp.90@gmail.com",
     description="3D Bin Packing",
