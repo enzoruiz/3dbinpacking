@@ -5,7 +5,7 @@
 
 ## Features
 1. Sorting Bins and Items:
-    ```[bigger_first=False/True]``` By default all the bins and items are sorted from the smallest to the biggest, also it can be vice versa, to make the packing in such ordering.
+    ```[bigger_bin_first=False/True]``` and ```[bigger_item_first=False/True]``` By default all the bins and items are sorted from the smallest to the biggest, also it can be vice versa, to make the packing in such ordering.
 2. Item Distribution:
     - ```[distribute_items=True]``` From a list of bins and items, put the items in the bins that at least one item be in one bin that can be fitted. That is, distribute all the items in all the bins so that they can be contained.
     - ```[distribute_items=False]``` From a list of bins and items, try to put all the items in each bin and in the end it show per bin all the items that was fitted and the items that was not.
