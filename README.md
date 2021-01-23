@@ -32,7 +32,7 @@ packer = Packer()           # PACKER DEFINITION
 packer.add_bin(my_bin)      # ADDING BINS TO PACKER
 packer.add_item(my_item)    # ADDING ITEMS TO PACKER
 
-packer.pack()               # PACKING - by default (bigger_first=False, distribute_items=False, number_of_decimals=3)
+packer.pack()               # PACKING - by default (bigger_bin_first=False, bigger_item_first=False, distribute_items=False, number_of_decimals=3)
 ```
 
 After packing:
