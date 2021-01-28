@@ -54,13 +54,13 @@ class Item:
 
 
 class Bin:
-    def __init__(self, name, width, height, depth, max_weight, empty_weight=0):
+    def __init__(self, name, width, height, depth, max_weight, empty_bin_weight=0):
         self.name = name
         self.width = width
         self.height = height
         self.depth = depth
-        self.weight = empty_weight
-        self.empty_weight = empty_weight
+        self.weight = empty_bin_weight
+        self.empty_bin_weight = empty_bin_weight
         self.max_weight = max_weight
         self.items = []
         self.unfitted_items = []
@@ -75,7 +75,7 @@ class Bin:
         self.depth = set_to_decimal(self.depth, number_of_decimals)
         self.max_weight = set_to_decimal(self.max_weight, number_of_decimals)
         self.weight = set_to_decimal(self.weight, number_of_decimals)
-        self.empty_weight = set_to_decimal(self.empty_weight, number_of_decimals)
+        self.empty_bin_weight = set_to_decimal(self.empty_bin_weight, number_of_decimals)
         self.number_of_decimals = number_of_decimals
 
     def string(self):
@@ -125,7 +125,7 @@ class Bin:
                     return fit
 
                 self.items.append(item)
-                self.weight = self.get_total_weight() + self.empty_weight
+                self.weight = self.get_total_weight() + self.empty_bin_weight
 
             if not fit:
                 item.position = valid_item_position
