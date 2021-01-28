@@ -54,27 +54,34 @@ class Item:
 
 
 class Bin:
-    def __init__(self, name, width, height, depth, max_weight):
+    def __init__(self, name, width, height, depth, max_weight, empty_weight=0):
         self.name = name
         self.width = width
         self.height = height
         self.depth = depth
+        self.weight = empty_weight
+        self.empty_weight = empty_weight
         self.max_weight = max_weight
         self.items = []
         self.unfitted_items = []
         self.number_of_decimals = DEFAULT_NUMBER_OF_DECIMALS
+
+        self.format_numbers(self.number_of_decimals)
+
 
     def format_numbers(self, number_of_decimals):
         self.width = set_to_decimal(self.width, number_of_decimals)
         self.height = set_to_decimal(self.height, number_of_decimals)
         self.depth = set_to_decimal(self.depth, number_of_decimals)
         self.max_weight = set_to_decimal(self.max_weight, number_of_decimals)
+        self.weight = set_to_decimal(self.weight, number_of_decimals)
+        self.empty_weight = set_to_decimal(self.empty_weight, number_of_decimals)
         self.number_of_decimals = number_of_decimals
 
     def string(self):
-        return "%s(%sx%sx%s, max_weight:%s) vol(%s)" % (
-            self.name, self.width, self.height, self.depth, self.max_weight,
-            self.get_volume()
+        return "%s(%sx%sx%s, total_weight:%s, max_weight:%s) vol(%s)" % (
+            self.name, self.width, self.height, self.depth, self.weight, 
+            self.max_weight, self.get_volume()
         )
 
     def get_volume(self):
@@ -118,6 +125,7 @@ class Bin:
                     return fit
 
                 self.items.append(item)
+                self.weight = self.get_total_weight() + self.empty_weight
 
             if not fit:
                 item.position = valid_item_position
