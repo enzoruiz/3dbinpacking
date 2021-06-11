@@ -1,6 +1,11 @@
 from .constants import RotationType, Axis
 from .auxiliary_methods import intersect, set_to_decimal
 
+# required to plot a representation of Bin and contained items 
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+
+
 DEFAULT_NUMBER_OF_DECIMALS = 3
 START_POSITION = [0, 0, 0]
 
@@ -128,6 +133,37 @@ class Bin:
             item.position = valid_item_position
 
         return fit
+     
+    def _plotCube(self, ax, x, y, z, dx, dy, dz, color='red'):
+        """ Auxiliary function to plot a cube. code taken somewhere from the web.  """
+        xx = [x, x, x+dx, x+dx, x]
+        yy = [y, y+dy, y+dy, y, y]
+        kwargs = {'alpha': 1, 'color': color}
+        ax.plot3D(xx, yy, [z]*5, **kwargs)
+        ax.plot3D(xx, yy, [z+dz]*5, **kwargs)
+        ax.plot3D([x, x], [y, y], [z, z+dz], **kwargs)
+        ax.plot3D([x, x], [y+dy, y+dy], [z, z+dz], **kwargs)
+        ax.plot3D([x+dx, x+dx], [y+dy, y+dy], [z, z+dz], **kwargs)
+        ax.plot3D([x+dx, x+dx], [y, y], [z, z+dz], **kwargs)
+    
+    def plotBoxAndItems(self,title=""):
+        """ side effective. Plot the Bin and the items it contains. """
+        fig = plt.figure()
+        axGlob = plt.axes(projection='3d')
+        # . plot scatola 
+        self._plotCube(axGlob,0, 0, 0, float(self.width), float(self.height), float(self.depth)  )
+        # . plot intems in the box 
+        colorList = ["black", "blue", "magenta", "orange"]
+        counter = 0
+        for item in self.items:
+            x,y,z = item.position
+            color = colorList[counter % len(colorList)]
+            self._plotCube(axGlob, float(x), float(y), float(z), 
+                     float(item.width), float(item.height), float(item.depth),
+                     color=color)
+            counter = counter + 1  
+        plt.title(title)
+        plt.show()     
 
 
 class Packer:
