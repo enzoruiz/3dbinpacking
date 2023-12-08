@@ -1,8 +1,6 @@
 from .constants import RotationType, Axis
 from .auxiliary_methods import intersect, set_to_decimal
 
-import copy
-
 DEFAULT_NUMBER_OF_DECIMALS = 3
 START_POSITION = [0, 0, 0]
 
@@ -95,14 +93,14 @@ class Bin:
 
     def put_item(self, item, pivot):
         fit = False
+        item = copy.deepcopy(item)
         valid_item_position = item.position
         item.position = pivot
 
         for i in range(0, len(RotationType.ALL)):
             item.rotation_type = i
+
             if not item.overturn and i not in [RotationType.RT_WHD, RotationType.RT_DHW]:
-                item.position = valid_item_position
-                item.rotation_type = RotationType.RT_WHD
                 continue
 
             dimension = item.get_dimension()
@@ -111,8 +109,6 @@ class Bin:
                 self.height < pivot[1] + dimension[1] or
                 self.depth < pivot[2] + dimension[2]
             ):
-                item.position = valid_item_position
-                item.rotation_type = RotationType.RT_WHD
                 continue
 
             fit = True
@@ -120,28 +116,22 @@ class Bin:
             for current_item_in_bin in self.items:
                 if intersect(current_item_in_bin, item):
                     fit = False
-                    item.position = valid_item_position
-                    item.rotation_type = RotationType.RT_WHD
                     break
 
             if fit:
                 if self.get_total_weight() + item.weight > self.max_weight:
                     fit = False
-                    item.position = valid_item_position
-                    item.rotation_type = RotationType.RT_WHD
                     return fit
 
                 self.items.append(item)
 
             if not fit:
                 item.position = valid_item_position
-                item.rotation_type = RotationType.RT_WHD
 
             return fit
 
         if not fit:
             item.position = valid_item_position
-            item.rotation_type = RotationType.RT_WHD
 
         return fit
 
