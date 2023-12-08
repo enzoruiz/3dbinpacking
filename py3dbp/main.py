@@ -111,6 +111,8 @@ class Bin:
                 self.height < pivot[1] + dimension[1] or
                 self.depth < pivot[2] + dimension[2]
             ):
+                item.position = valid_item_position
+                item.rotation_type = RotationType.RT_WHD
                 continue
 
             fit = True
@@ -118,22 +120,28 @@ class Bin:
             for current_item_in_bin in self.items:
                 if intersect(current_item_in_bin, item):
                     fit = False
+                    item.position = valid_item_position
+                    item.rotation_type = RotationType.RT_WHD
                     break
 
             if fit:
                 if self.get_total_weight() + item.weight > self.max_weight:
                     fit = False
+                    item.position = valid_item_position
+                    item.rotation_type = RotationType.RT_WHD
                     return fit
 
                 self.items.append(item)
 
             if not fit:
                 item.position = valid_item_position
+                item.rotation_type = RotationType.RT_WHD
 
             return fit
 
         if not fit:
             item.position = valid_item_position
+            item.rotation_type = RotationType.RT_WHD
 
         return fit
 
