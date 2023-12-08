@@ -1,12 +1,14 @@
 from .constants import RotationType, Axis
 from .auxiliary_methods import intersect, set_to_decimal
 
+import copy
+
 DEFAULT_NUMBER_OF_DECIMALS = 3
 START_POSITION = [0, 0, 0]
 
 
 class Item:
-    def __init__(self, name, width, height, depth, weight):
+    def __init__(self, name, width, height, depth, weight, overturn=True):
         self.name = name
         self.width = width
         self.height = height
@@ -15,6 +17,7 @@ class Item:
         self.rotation_type = 0
         self.position = START_POSITION
         self.number_of_decimals = DEFAULT_NUMBER_OF_DECIMALS
+        self.overturn = overturn
 
     def format_numbers(self, number_of_decimals):
         self.width = set_to_decimal(self.width, number_of_decimals)
@@ -92,11 +95,15 @@ class Bin:
 
     def put_item(self, item, pivot):
         fit = False
+        item = copy.deepcopy(item)
         valid_item_position = item.position
         item.position = pivot
 
         for i in range(0, len(RotationType.ALL)):
             item.rotation_type = i
+            if not item.overturn and i not in [RotationType.RT_WHD, RotationType.RT_DHW]:
+                continue
+
             dimension = item.get_dimension()
             if (
                 self.width < pivot[0] + dimension[0] or
