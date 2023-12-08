@@ -95,13 +95,14 @@ class Bin:
 
     def put_item(self, item, pivot):
         fit = False
-        item = copy.deepcopy(item)
         valid_item_position = item.position
         item.position = pivot
 
         for i in range(0, len(RotationType.ALL)):
             item.rotation_type = i
             if not item.overturn and i not in [RotationType.RT_WHD, RotationType.RT_DHW]:
+                item.position = valid_item_position
+                item.rotation_type = RotationType.RT_WHD
                 continue
 
             dimension = item.get_dimension()
