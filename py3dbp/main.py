@@ -93,7 +93,6 @@ class Bin:
 
     def put_item(self, item, pivot):
         fit = False
-        item = copy.deepcopy(item)
         valid_item_position = item.position
         item.position = pivot
 
